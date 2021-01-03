@@ -19,9 +19,9 @@ _LOGGER = logging.getLogger(__name__)
 
 DOMAIN = "google_firebase_store"
 
-CONF_SERVICE_PRINCIPAL = "credentials_json"
-CONF_WEB_TOKEN = "web_token"
-CONF_FILTER = "filter"
+CONF_SERVICE_PRINCIPAL = "credentials_json" #This will be your key created from firebase
+CONF_WEB_TOKEN = "web_token"                #This will be your long term bearer token created from your profile (string, can be in !secret form)
+CONF_FILTER = "filter"                      #This will be the list of entities to track using the HASS filter schema
 
 CONFIG_SCHEMA = vol.Schema(
     {
