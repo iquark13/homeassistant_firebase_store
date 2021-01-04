@@ -26,3 +26,17 @@ Step 4:
 
 - Generate bearer token from Home Assistant -> Profile (bottom left) -> scroll down to long lived access token.
     *Save this string in the 'homeassistant_access_token.txt' in the git folder.
+
+
+
+
+Configuration Format:
+
+####Adding in custom component for firebase######
+google_firebase_store:
+  credentials_json: homeassist-glink-firebase.json
+  web_token: !secret hometalk_token
+  filter:
+    include_domains:
+      - switch
+      - light

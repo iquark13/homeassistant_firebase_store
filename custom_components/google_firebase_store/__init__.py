@@ -104,6 +104,11 @@ def setup(hass: HomeAssistant, yaml_config: Dict[str, Any]):
 
     hass.bus.listen(EVENT_STATE_CHANGED, send_to_pubsub) #This seems like it is calling the private bus component of the class maybe change to eventbus?
     
+
+    #Now deal with actually setting things!
+
+    #Useful background on the firestore callback: https://firebase.google.com/docs/firestore/query-data/listen#python_4
+
     def fire_event(col_snapshot, changes, read_time):
         print(u'Callback received query snapshot.')
         print(u'Current triggers:')
@@ -116,7 +121,7 @@ def setup(hass: HomeAssistant, yaml_config: Dict[str, Any]):
 
     col_query = db.collection(u'triggers')
 
-    # Watch the collection query
+    # Watch the collection query in a background thread, and call back to the function listed
     query_watch = col_query.on_snapshot(fire_event)
 
     return True
