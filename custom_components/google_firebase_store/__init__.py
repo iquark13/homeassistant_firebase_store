@@ -23,13 +23,16 @@ CONF_SERVICE_PRINCIPAL = "credentials_json" #This will be your key created from 
 CONF_WEB_TOKEN = "web_token"                #This will be your long term bearer token created from your profile (string, can be in !secret form)
 CONF_FILTER = "filter"                      #This will be the list of entities to track using the HASS filter schema
 
+
+#This is using vol to validate that the config data is implemented correctly.
+#This is also run on the hass config entity that is passed into setup automatically per "Using config" under "Home Assistant Core 101"
 CONFIG_SCHEMA = vol.Schema(
     {
         DOMAIN: vol.Schema(
             {
                 vol.Required(CONF_SERVICE_PRINCIPAL): cv.string,
                 vol.Optional(CONF_WEB_TOKEN): cv.string,
-                vol.Optional(CONF_FILTER): FILTER_SCHEMA,
+                vol.Optional(CONF_FILTER): FILTER_SCHEMA,  #This forces the config 'filter' to run through the filter helper! That's why it didn't make sense below calling a dict!
             }
         )
     },
@@ -42,8 +45,9 @@ url = 'http://localhost:8123/api/services/homeassistant/turn_on'
 def setup(hass: HomeAssistant, yaml_config: Dict[str, Any]):
     """Activate Google Firebase component."""
     
-    #The hass.config is passed into setup as the yaml_config - this pulls the settings from the component
+    #The config is passed into setup as the yaml_config items - this pulls the settings from the component
         #like the filter values, or the token values, or the firebase auth file location.
+        # This is pulling the specific custom component info by using the DOMAIN var assigned above.
     config = yaml_config[DOMAIN] 
     
     #This simply pulls together the path to the firebase private key file.
