@@ -36,8 +36,10 @@ CONFIG_SCHEMA = vol.Schema(
     extra=vol.ALLOW_EXTRA,
 )
 
-url = 'http://localhost:8123/api/services/homeassistant/turn_on'
+url = 'http://localhost:8123/api/services/homeassistant/toggle'
 
+#Set the watch collection:
+WATCH_COLLECTION = u'exposed_devices'
 
 def setup(hass: HomeAssistant, yaml_config: Dict[str, Any]):
     """Activate Google Firebase component."""
@@ -48,7 +50,9 @@ def setup(hass: HomeAssistant, yaml_config: Dict[str, Any]):
     )
     
     token = config[CONF_WEB_TOKEN]
-    hed = {'Authorization': 'Bearer ' + token}
+    #Create the API call header for the HTTP post. This is a long term key.
+    hed = {'Authorization': 'Bearer ' + token,
+            "content-type": "application/json"}
 
     if not os.path.isfile(service_principal_path):
         _LOGGER.error("Path to credentials file cannot be found")
@@ -78,6 +82,7 @@ def setup(hass: HomeAssistant, yaml_config: Dict[str, Any]):
 
     hass.bus.listen(EVENT_STATE_CHANGED, send_to_pubsub)
     
+
     def fire_event(col_snapshot, changes, read_time):
         print(u'Callback received query snapshot.')
         print(u'Current triggers:')
@@ -88,7 +93,27 @@ def setup(hass: HomeAssistant, yaml_config: Dict[str, Any]):
                 response = requests.post(url, json=data, headers=hed)
                 _LOGGER.debug("Firebase plugin fire: " + u'{}'.format(change.document.id))
 
-    col_query = db.collection(u'triggers')
+
+#Helpful: https://github.com/GoogleCloudPlatform/python-docs-samples/blob/master/firestore/cloud-client/snippets.py
+    def execute_google_command(col_snapshot, changes, read_time):
+        print(u'Callback received on trigger snapshot.')
+        deletion_queue = []
+        for change in changes:
+            if change.type.name in ['MODIFIED','ADDED']:
+                data = {"entity_id": change.document.id}
+                response = requests.post(url, json=data, headers=hed)
+                deletion_queue.add(change.document.id)
+        for entity in deletion_queue:
+            delete_used_field(entity)
+        return
+
+    def delete_used_field(entity: str):
+        entity_ref = col_query.document(entity)
+        entity_ref.update({u'state':firestore.DELETE_FIELD})
+        return
+
+
+    col_query = db.collection(WATCH_COLLECTION)
 
     # Watch the collection query
     query_watch = col_query.on_snapshot(fire_event)
