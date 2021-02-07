@@ -102,7 +102,7 @@ def setup(hass: HomeAssistant, yaml_config: Dict[str, Any]):
             if change.type.name in ['MODIFIED','ADDED']:
                 data = {"entity_id": change.document.id}
                 response = requests.post(url, json=data, headers=hed)
-                deletion_queue.add(change.document.id)
+                deletion_queue.append(change.document.id)
         for entity in deletion_queue:
             delete_used_field(entity)
         return
