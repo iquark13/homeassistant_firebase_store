@@ -116,7 +116,7 @@ def setup(hass: HomeAssistant, yaml_config: Dict[str, Any]):
     col_query = db.collection(WATCH_COLLECTION)
 
     # Watch the collection query
-    query_watch = col_query.on_snapshot(fire_event)
+    query_watch = col_query.on_snapshot(execute_google_command)
 
     return True
 
