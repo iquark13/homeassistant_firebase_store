@@ -127,13 +127,19 @@ def setup(hass: HomeAssistant, yaml_config: Dict[str, Any]):
 
 #Helpful: https://github.com/GoogleCloudPlatform/python-docs-samples/blob/master/firestore/cloud-client/snippets.py
     def execute_google_command(col_snapshot, changes, read_time):
-        print(u'Callback received on trigger snapshot.')
+        _LOGGER.debug(u'Callback received on trigger snapshot.')
         deletion_queue = []
         for change in changes:
             if change.type.name in ['MODIFIED','ADDED']:
-                data = {"entity_id": change.document.id}
-                response = requests.post(url, json=data, headers=hed)
-                deletion_queue.append(change.document.id)
+                _LOGGER.debug(u'Entity: ' + change.document.id)
+                try:
+                    state_holder = change.document.get('state')
+                    data = {"entity_id": change.document.id}
+                    response = requests.post(url, json=data, headers=hed)
+                    deletion_queue.append(change.document.id)
+                except:
+                    pass
+
         for entity in deletion_queue:
             delete_used_field(entity)
         return
